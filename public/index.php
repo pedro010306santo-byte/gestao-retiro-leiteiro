@@ -46,9 +46,12 @@ function numero(float $valor, int $casas = 1): string
 </head>
 <body>
 <header>
-    <div>
-        <span class="marca">🐄 RetiroGestor</span>
-        <p>Produção, estoque e vendas em um só lugar</p>
+    <div class="cabecalho">
+        <div>
+            <span class="marca">🐄 RetiroGestor</span>
+            <p>Produção, estoque e vendas em um só lugar</p>
+        </div>
+        <a class="link-cabecalho" href="relatorio.php">Ver relatório mensal</a>
     </div>
 </header>
 
