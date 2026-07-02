@@ -23,6 +23,7 @@ $resumo = resumo($pdo);
 $producoes = $pdo->query('SELECT * FROM producoes ORDER BY data_producao DESC, id DESC LIMIT 8')->fetchAll();
 $movimentos = $pdo->query('SELECT * FROM racao_movimentos ORDER BY data_movimento DESC, id DESC LIMIT 8')->fetchAll();
 $vendas = $pdo->query('SELECT * FROM vendas ORDER BY data_venda DESC, id DESC LIMIT 8')->fetchAll();
+$animais = $pdo->query('SELECT * FROM animais ORDER BY status, brinco LIMIT 50')->fetchAll();
 $hoje = date('Y-m-d');
 
 function e(string $valor): string
@@ -64,12 +65,14 @@ function numero(float $valor, int $casas = 1): string
         <article><span>Leite disponível</span><strong><?= numero($resumo['leite_disponivel']) ?> L</strong></article>
         <article><span>Ração disponível</span><strong><?= numero($resumo['racao_disponivel']) ?> kg</strong></article>
         <article><span>Faturamento total</span><strong>R$ <?= numero($resumo['faturamento'], 2) ?></strong></article>
+        <article><span>Animais ativos</span><strong><?= (int) $resumo['animais_ativos'] ?></strong></article>
     </section>
 
     <nav class="abas" aria-label="Cadastros">
         <button class="ativo" data-alvo="producao">Produção de leite</button>
         <button data-alvo="racao">Estoque de ração</button>
         <button data-alvo="venda">Venda de leite</button>
+        <button data-alvo="animal">Cadastro de animais</button>
     </nav>
 
     <section class="formularios">
@@ -101,6 +104,17 @@ function numero(float $valor, int $casas = 1): string
             <label>Comprador<input name="comprador" maxlength="120" placeholder="Nome do comprador ou laticínio"></label>
             <button type="submit">Salvar venda</button>
         </form>
+
+        <form id="animal" method="post" class="formulario">
+            <input type="hidden" name="acao" value="animal">
+            <h2>Cadastrar animal</h2>
+            <label>Número do brinco<input name="brinco" maxlength="30" placeholder="Ex.: VT-024" required></label>
+            <label>Nome<input name="nome" maxlength="80" placeholder="Nome opcional"></label>
+            <label>Raça<input name="raca" maxlength="80" placeholder="Ex.: Girolando" required></label>
+            <label>Data de nascimento<input type="date" name="nascimento"></label>
+            <label>Status<select name="status"><option value="ativo">Ativo</option><option value="vendido">Vendido</option><option value="inativo">Inativo</option></select></label>
+            <button type="submit">Salvar animal</button>
+        </form>
     </section>
 
     <section class="historicos">
@@ -125,6 +139,14 @@ function numero(float $valor, int $casas = 1): string
             <div class="tabela"><table><thead><tr><th>Data</th><th>Litros</th><th>Valor</th><th>Total</th></tr></thead><tbody>
             <?php foreach ($vendas as $item): ?><tr><td><?= e($item['data_venda']) ?></td><td><?= numero((float)$item['litros']) ?> L</td><td>R$ <?= numero((float)$item['valor_litro'], 2) ?></td><td>R$ <?= numero((float)$item['litros'] * (float)$item['valor_litro'], 2) ?></td></tr><?php endforeach; ?>
             <?php if (!$vendas): ?><tr><td colspan="4">Nenhuma venda registrada.</td></tr><?php endif; ?>
+            </tbody></table></div>
+        </article>
+
+        <article>
+            <h2>Rebanho cadastrado</h2>
+            <div class="tabela"><table><thead><tr><th>Brinco</th><th>Nome</th><th>Raça</th><th>Status</th></tr></thead><tbody>
+            <?php foreach ($animais as $item): ?><tr><td><?= e($item['brinco']) ?></td><td><?= e($item['nome'] ?: '—') ?></td><td><?= e($item['raca']) ?></td><td><span class="tipo status-<?= e($item['status']) ?>"><?= e(ucfirst($item['status'])) ?></span></td></tr><?php endforeach; ?>
+            <?php if (!$animais): ?><tr><td colspan="4">Nenhum animal cadastrado.</td></tr><?php endif; ?>
             </tbody></table></div>
         </article>
     </section>
