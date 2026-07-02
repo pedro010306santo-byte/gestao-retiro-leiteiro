@@ -8,6 +8,7 @@ estoque de ração e vendas de leite.
 - Registro da produção de leite por data
 - Controle de entrada e saída de ração em quilos
 - Registro de vendas com quantidade e valor por litro
+- Cadastro de animais com brinco único, raça, nascimento e status
 - Cálculo automático do leite disponível, estoque de ração e faturamento
 - Histórico das movimentações recentes
 - Validação para impedir vendas ou saídas maiores que o estoque
