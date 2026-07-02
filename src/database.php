@@ -47,6 +47,15 @@ function criarTabelas(PDO $pdo): void
             valor_litro REAL NOT NULL CHECK (valor_litro >= 0),
             comprador TEXT,
             criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS animais (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            brinco TEXT NOT NULL UNIQUE,
+            nome TEXT,
+            raca TEXT NOT NULL,
+            nascimento TEXT,
+            status TEXT NOT NULL DEFAULT "ativo" CHECK (status IN ("ativo", "vendido", "inativo")),
+            criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );'
     );
 }
@@ -95,6 +104,7 @@ function resumo(PDO $pdo): array
         'leite_disponivel' => $produzido - $vendido,
         'racao_disponivel' => $entradas - $saidas,
         'faturamento' => total($pdo, 'SELECT COALESCE(SUM(litros * valor_litro), 0) FROM vendas'),
+        'animais_ativos' => total($pdo, "SELECT COUNT(*) FROM animais WHERE status = 'ativo'"),
     ];
 }
 
@@ -132,6 +142,30 @@ function salvarRegistro(PDO $pdo, string $acao): string
         $stmt = $pdo->prepare('INSERT INTO vendas (data_venda, litros, valor_litro, comprador) VALUES (?, ?, ?, ?)');
         $stmt->execute([dataPost('data'), $litros, round((float) $valor, 2), textoPost('comprador')]);
         return 'Venda de leite registrada.';
+    }
+
+    if ($acao === 'animal') {
+        $brinco = textoPost('brinco', 30);
+        $raca = textoPost('raca', 80);
+        $status = $_POST['status'] ?? '';
+        if ($brinco === '' || $raca === '' || !in_array($status, ['ativo', 'vendido', 'inativo'], true)) {
+            throw new InvalidArgumentException('Informe brinco, raça e status válidos.');
+        }
+        $nascimento = trim($_POST['nascimento'] ?? '');
+        if ($nascimento !== '') {
+            $_POST['nascimento_validacao'] = $nascimento;
+            $nascimento = dataPost('nascimento_validacao');
+        }
+        try {
+            $stmt = $pdo->prepare('INSERT INTO animais (brinco, nome, raca, nascimento, status) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$brinco, textoPost('nome', 80), $raca, $nascimento ?: null, $status]);
+        } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'UNIQUE')) {
+                throw new InvalidArgumentException('Já existe um animal com esse número de brinco.');
+            }
+            throw $e;
+        }
+        return 'Animal cadastrado com sucesso.';
     }
 
     throw new InvalidArgumentException('Ação inválida.');
