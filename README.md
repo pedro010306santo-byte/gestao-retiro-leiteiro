@@ -32,6 +32,12 @@ php -S localhost:8000 -t public
 Acesse `http://localhost:8000`. O banco será criado automaticamente em
 `data/retiro.sqlite` na primeira execução.
 
+No ambiente local preparado pelo Codex no Windows, também é possível iniciar com:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
+```
+
 ## Estrutura
 
 ```text
